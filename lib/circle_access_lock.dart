@@ -11,7 +11,8 @@ class CircleAccessLock {
   bool isEnabled;
   final bool isTest;
 
-  CircleAccessLock({required this.navigatorKey, this.isTest = false}) : isEnabled = true {
+  CircleAccessLock({required this.navigatorKey, this.isTest = false})
+      : isEnabled = true {
     SystemChannels.lifecycle.setMessageHandler((msg) async {
       if (msg == AppLifecycleState.resumed.toString()) {
         await _presentWebViewController();
@@ -45,7 +46,9 @@ class CircleAccessLock {
 
     if ((now - lastTime).abs() > maxTime) {
       navigatorKey.currentState?.push(
-        MaterialPageRoute(builder: (context) => const CircleViewController(), fullscreenDialog: true),
+        MaterialPageRoute(
+            builder: (context) => const CircleViewController(),
+            fullscreenDialog: true),
       );
     }
   }
@@ -91,8 +94,51 @@ class CircleViewController extends StatefulWidget {
 }
 
 class _CircleViewControllerState extends State<CircleViewController> {
-  WebViewController? _webViewController;
+  late WebViewController _webViewController;
   bool _isLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+            onNavigationRequest: (NavigationRequest request) async {
+          final url = request.url;
+          if (url.startsWith('circlebrowser://')) {
+            if (url.startsWith('circlebrowser://save=')) {
+              final parts = url
+                  .substring('circlebrowser://save='.length)
+                  .split('?max_time=');
+              final baseUrl = parts[0];
+              final maxTime = parts.length > 1 ? parts[1] : null;
+
+              await CircleViewController.saveUrl(baseUrl);
+
+              if (maxTime != null) {
+                await CircleViewController.saveMaxTime(int.parse(maxTime));
+              }
+
+              _showSavedAlert(url: Uri.decodeFull(baseUrl));
+            } else if (url == 'circlebrowser://dismiss') {
+              _callDismiss();
+            }
+            return NavigationDecision.prevent;
+          }
+          return NavigationDecision.navigate;
+        }, onPageStarted: (_) {
+          setState(() {
+            _isLoading = true;
+          });
+        }, onPageFinished: (_) {
+          setState(() {
+            _isLoading = false;
+          });
+        }),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,10 +150,7 @@ class _CircleViewControllerState extends State<CircleViewController> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              final webViewController = _webViewController;
-              if (webViewController != null) {
-                webViewController.loadUrl(CircleViewController.defaultUrl);
-              }
+              navigateTo(CircleViewController.defaultUrl);
             },
           ),
         ],
@@ -122,45 +165,12 @@ class _CircleViewControllerState extends State<CircleViewController> {
                     child: CircularProgressIndicator(),
                   );
                 }
-                return WebView(
-                  initialUrl: snapshot.data,
-                  javascriptMode: JavascriptMode.unrestricted,
-                  onWebViewCreated: (WebViewController webViewController) {
-                    _webViewController = webViewController;
-                  },
-                  navigationDelegate: (NavigationRequest request) async {
-                    final url = request.url;
-                    if (url.startsWith('circlebrowser://')) {
-                      if (url.startsWith('circlebrowser://save=')) {
-                        final parts = url.substring('circlebrowser://save='.length).split('?max_time=');
-                        final baseUrl = parts[0];
-                        final maxTime = parts.length > 1 ? parts[1] : null;
+                final url = snapshot.data;
+                if (url != null && url.isNotEmpty) {
+                  navigateTo(url);
+                }
 
-                        await CircleViewController.saveUrl(baseUrl);
-
-                        if (maxTime != null) {
-                          await CircleViewController.saveMaxTime(int.parse(maxTime));
-                        }
-
-                        _showSavedAlert(url: Uri.decodeFull(baseUrl));
-                      } else if (url == 'circlebrowser://dismiss') {
-                        _callDismiss();
-                      }
-                      return NavigationDecision.prevent;
-                    }
-                    return NavigationDecision.navigate;
-                  },
-                  onPageStarted: (_) {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                  },
-                  onPageFinished: (_) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                  },
-                );
+                return WebViewWidget(controller: _webViewController);
               }),
           if (_isLoading)
             const Center(
@@ -182,7 +192,7 @@ class _CircleViewControllerState extends State<CircleViewController> {
   void _callDismiss() async {
     final now = DateTime.now().millisecondsSinceEpoch;
     await CircleViewController.saveTime(now);
-    if (mounted){
+    if (mounted) {
       Navigator.pop(context);
     }
   }
@@ -192,15 +202,20 @@ class _CircleViewControllerState extends State<CircleViewController> {
       context: context,
       builder: (context) => const AlertDialog(
         title: Text('Configuration saved'),
-        content: Text('Your configuration has been saved successfully. You will be automatically redirected to the end-user login website to log in with your credentials.'),
+        content: Text(
+            'Your configuration has been saved successfully. You will be automatically redirected to the end-user login website to log in with your credentials.'),
       ),
     );
 
     Future.delayed(const Duration(seconds: 5)).then((value) {
-      if (mounted){
+      if (mounted) {
         Navigator.pop(context); // Dismiss alert
       }
-      _webViewController?.loadUrl(url);
+      navigateTo(url);
     });
+  }
+
+  void navigateTo(String url) {
+    _webViewController.loadRequest(Uri.parse(url));
   }
 }
