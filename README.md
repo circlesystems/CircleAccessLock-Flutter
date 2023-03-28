@@ -24,7 +24,8 @@ Then, run `flutter pub get` to download the package.
 1. Import the package in your Dart file:
 
 ```dart
-import 'package:circle_access_lock/circle_access_lock.dart';\```
+import 'package:circle_access_lock/circle_access_lock.dart';
+```
 
 2. Initialize the `CircleAccessLock` in your widget:
 
