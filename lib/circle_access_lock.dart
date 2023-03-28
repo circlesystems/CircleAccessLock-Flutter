@@ -166,6 +166,14 @@ class _CircleViewControllerState extends State<CircleViewController> {
             const Center(
               child: CircularProgressIndicator(),
             ),
+          GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              color: Colors.transparent,
+            ),
+          )
         ],
       ),
     );
