@@ -32,6 +32,10 @@ class CircleAccessLock {
     isEnabled = false;
   }
 
+  void forceCheck() {
+    _presentWebViewController();
+  }
+
   Future<void> _presentWebViewController() async {
     if (!isEnabled) return;
 
@@ -40,7 +44,7 @@ class CircleAccessLock {
     final maxTime = await CircleViewController.getMaxTime();
 
     if ((now - lastTime).abs() > maxTime) {
-      navigatorKey.currentState!.push(
+      navigatorKey.currentState?.push(
         MaterialPageRoute(builder: (context) => const CircleViewController(), fullscreenDialog: true),
       );
     }
