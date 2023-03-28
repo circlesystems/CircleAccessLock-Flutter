@@ -1,6 +1,6 @@
 name: circle_access_lock
 description: Lock your app with a scan to access by a second device (mainly for tablets and desktops) powered by Circle.
-version: 1.0.2
+version: 1.0.3
 homepage: https://github.com/circlesystems/CircleAccessLock-Flutter
 
 environment:

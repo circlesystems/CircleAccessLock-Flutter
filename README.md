@@ -14,7 +14,7 @@ To use the Circle Access Lock package, add it as a dependency in your `pubspec.y
 
 ```yaml
 dependencies:
-circle_access_lock: ^1.0.2
+circle_access_lock: ^1.0.3
 ```
 
 Then, run `flutter pub get` to download the package.
@@ -65,6 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       circleAccessLock = CircleAccessLock(navigatorKey: navigatorKey);
+      // you can use forceCheck to check on demand
+      circleAccessLock.forceCheck();
     });
   }
 
@@ -111,7 +113,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-
 ```
 
 3. Use the `enable` and `disable` methods to control the access lock:
@@ -120,6 +121,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
 circleAccessLock.enable();
 circleAccessLock.disable();
+
+```
+
+
+34. if you need, you can use `forceCheck` to check on demand:
+
+```dart
+
+circleAccessLock.forceCheck();
 
 ```
 

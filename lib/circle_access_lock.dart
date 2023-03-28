@@ -171,10 +171,12 @@ class _CircleViewControllerState extends State<CircleViewController> {
     );
   }
 
-  void _callDismiss() {
+  void _callDismiss() async {
     final now = DateTime.now().millisecondsSinceEpoch;
-    CircleViewController.saveTime(now);
-    Navigator.pop(context);
+    await CircleViewController.saveTime(now);
+    if (mounted){
+      Navigator.pop(context);
+    }
   }
 
   void _showSavedAlert({required String url}) {
@@ -187,7 +189,9 @@ class _CircleViewControllerState extends State<CircleViewController> {
     );
 
     Future.delayed(const Duration(seconds: 5)).then((value) {
-      Navigator.pop(context); // Dismiss alert
+      if (mounted){
+        Navigator.pop(context); // Dismiss alert
+      }
       _webViewController?.loadUrl(url);
     });
   }
