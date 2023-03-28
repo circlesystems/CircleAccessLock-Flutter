@@ -99,6 +99,7 @@ class _CircleViewControllerState extends State<CircleViewController> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Circle Access Lock'),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
