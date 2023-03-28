@@ -6,6 +6,9 @@ A Flutter package to handle access lock using a Circle Technology. This package 
 
 - Easy integration with your Flutter app
 - Configurable time constraints
+- Keep in mind that the default time constraint (demo) is 10 minutes
+- Once you sign in, the lock screen will not be triggered for the next 10 minutes
+- Our customers can customize it to be all time, 1 minute, 1 hour, 1 day, etc.
 - Enable/disable the access lock
 
 ## Installation
@@ -14,7 +17,7 @@ To use the Circle Access Lock package, add it as a dependency in your `pubspec.y
 
 ```yaml
 dependencies:
-circle_access_lock: ^1.0.4
+circle_access_lock: ^1.0.5
 ```
 
 Then, run `flutter pub get` to download the package.
