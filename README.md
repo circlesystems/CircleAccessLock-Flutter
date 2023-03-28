@@ -30,40 +30,87 @@ import 'package:circle_access_lock/circle_access_lock.dart';
 2. Initialize the `CircleAccessLock` in your widget:
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:circle_access_lock/circle_access_lock.dart';
+import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return const MyHomePage(title: 'Flutter Demo Home Page');
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+
   final navigatorKey = GlobalKey<NavigatorState>();
-  final circleAccessLock = CircleAccessLock(navigatorKey: navigatorKey);
+  late CircleAccessLock circleAccessLock;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      circleAccessLock = CircleAccessLock(navigatorKey: navigatorKey);
+    });
+  }
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      home: Scaffold(
-        body: Center(
-          child: Text('Testing'),
-          ),
+    return  MaterialApp(
+        navigatorKey: navigatorKey,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
         ),
-      ),
+        home: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
+          body: Center(
+
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const Text(
+                  'You have pushed the button this many times:',
+                ),
+                Text(
+                  '$_counter',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ],
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _incrementCounter,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ),
+        )
     );
   }
 }
+
 
 ```
 
