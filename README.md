@@ -17,7 +17,7 @@ To use the Circle Access Lock package, add it as a dependency in your `pubspec.y
 
 ```yaml
 dependencies:
-circle_access_lock: ^1.0.6
+circle_access_lock: ^1.0.7
 ```
 
 Then, run `flutter pub get` to download the package.

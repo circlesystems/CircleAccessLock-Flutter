@@ -1,3 +1,4 @@
+/// A Dart package to add a Circle Access Lock to a Flutter application.
 library circle_access_lock;
 
 import 'dart:async';
@@ -6,11 +7,16 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 
+/// A class that manages the Circle Access Lock.
 class CircleAccessLock {
   final GlobalKey<NavigatorState> navigatorKey;
   bool isEnabled;
   final bool isTest;
 
+  /// Constructor for CircleAccessLock.
+  ///
+  /// [navigatorKey] is a required GlobalKey<NavigatorState>.
+  /// [isTest] is an optional flag, defaulting to false.
   CircleAccessLock({required this.navigatorKey, this.isTest = false})
       : isEnabled = true {
     SystemChannels.lifecycle.setMessageHandler((msg) async {
@@ -25,18 +31,22 @@ class CircleAccessLock {
     }
   }
 
+  /// Enables the Circle Access Lock.
   void enable() {
     isEnabled = true;
   }
 
+  /// Disables the Circle Access Lock.
   void disable() {
     isEnabled = false;
   }
 
+  /// Forces a check for Circle Access Lock.
   void forceCheck() {
     _presentWebViewController();
   }
 
+  /// Presents the WebViewController for Circle Access Lock.
   Future<void> _presentWebViewController() async {
     if (!isEnabled) return;
 
@@ -54,6 +64,7 @@ class CircleAccessLock {
   }
 }
 
+/// A StatefulWidget that displays the Circle Access Lock interface.
 class CircleViewController extends StatefulWidget {
   static const defaultUrl = 'https://unic-auth.web.app/circlebrowser/';
 
@@ -62,44 +73,51 @@ class CircleViewController extends StatefulWidget {
   @override
   State<CircleViewController> createState() => _CircleViewControllerState();
 
+  /// Retrieves the saved URL from SharedPreferences.
   static Future<String> getSavedUrl() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('savedUrl') ?? defaultUrl;
   }
 
+  /// Saves the URL to SharedPreferences.
   static Future<void> saveUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('savedUrl', Uri.decodeFull(url));
   }
 
+  /// Retrieves the last saved time from SharedPreferences.
   static Future<int> getLastTime() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('lastTime') ?? 0;
   }
 
+  /// Saves the time to SharedPreferences.
   static Future<void> saveTime(int time) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('lastTime', time);
   }
 
+  /// Retrieves the max time from SharedPreferences.
   static Future<int> getMaxTime() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('maxTime') ?? (10 * 60 * 1000); // 10 min default
   }
 
+  /// Saves the max time to SharedPreferences.
   static Future<void> saveMaxTime(int time) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('maxTime', time);
   }
 }
 
+/// The State object for CircleViewController.
 class _CircleViewControllerState extends State<CircleViewController> {
   late WebViewController _webViewController;
   bool _isLoading = true;
 
+  /// Initializes the state object and the webview controller.
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -138,8 +156,16 @@ class _CircleViewControllerState extends State<CircleViewController> {
           });
         }),
       );
+
+    _loadInitialContent();
   }
 
+  void _loadInitialContent() async {
+    final url = await CircleViewController.getSavedUrl();
+    _navigateTo(url);
+  }
+
+  /// Builds the main view of the Circle Access Lock screen.
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,28 +176,14 @@ class _CircleViewControllerState extends State<CircleViewController> {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              navigateTo(CircleViewController.defaultUrl);
+              _navigateTo(CircleViewController.defaultUrl);
             },
           ),
         ],
       ),
       body: Stack(
         children: [
-          FutureBuilder(
-              future: CircleViewController.getSavedUrl(),
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                final url = snapshot.data;
-                if (url != null && url.isNotEmpty) {
-                  navigateTo(url);
-                }
-
-                return WebViewWidget(controller: _webViewController);
-              }),
+          WebViewWidget(controller: _webViewController),
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(),
@@ -211,11 +223,11 @@ class _CircleViewControllerState extends State<CircleViewController> {
       if (mounted) {
         Navigator.pop(context); // Dismiss alert
       }
-      navigateTo(url);
+      _navigateTo(url);
     });
   }
 
-  void navigateTo(String url) {
+  void _navigateTo(String url) {
     _webViewController.loadRequest(Uri.parse(url));
   }
 }
